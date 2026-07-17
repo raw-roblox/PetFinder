@@ -17,16 +17,14 @@ if PlayerGui:FindFirstChild("VisualItemResizer") then
 end
 
 -- ===================== CORE PET FINDER LOGIC =====================
-local selectedPetID = nil -- unique ID for selected pet
-local selectedPetName = nil -- pet name for display
+local selectedPetID = nil 
+local selectedPetName = nil 
 local isJoining = false 
 local currentPetList = {} 
-local petServerData = {} -- store data per pet (id-based)
+local petServerData = {} 
 local petButtons = {} 
 
 local petsBase = {
-    "Frog", "Bunny", "Owl", "Deer", "Turtle", "Robin", "Bee", "Monkey", "Bear", "Dragonfly", "Unicorn", "Raccoon", "Ice Serpent", "Black Dragon",
-    "Frog", "Bunny", "Owl", "Deer", "Turtle", "Robin", "Bee", "Monkey", "Bear", "Dragonfly", "Unicorn", "Raccoon", "Ice Serpent", "Black Dragon",
     "Frog", "Bunny", "Owl", "Deer", "Turtle", "Robin", "Bee", "Monkey", "Bear", "Dragonfly", "Unicorn", "Raccoon", "Ice Serpent", "Black Dragon"
 }
 
@@ -55,21 +53,21 @@ local function getRandomNewPet()
     return availablePool[math.random(1, #availablePool)]
 end
 
+-- UPDATED: Random cooldown mula 40 hanggang 120 seconds para hindi sabay-sabay
 local function generateFakeData()
     local maxPlayers = 8 
     local currentPlayers = math.random(0, maxPlayers - 1) 
-    local randomTime = math.random(5, 25) 
+    local randomTime = math.random(40, 120) 
     return {
         players = currentPlayers .. " / " .. maxPlayers,
         timeLeft = randomTime
     }
 end
 
--- Initialize first 15 pets with unique IDs
 local maxDisplayCount = 15
 for i = 1, maxDisplayCount do
     local pName = getRandomNewPet()
-    local petID = HttpService:GenerateGUID(false) -- generate unique ID
+    local petID = HttpService:GenerateGUID(false) 
     table.insert(currentPetList, {id=petID, name=pName})
     petServerData[petID] = generateFakeData()
 end
@@ -274,7 +272,7 @@ local function refreshPetListUI()
             btn.TextColor3 = Color3.fromRGB(46, 204, 113)
         end
         
-        local timeString = string.format("%02d Seconds Left", data.timeLeft)
+        local timeString = string.format("%d Seconds Left", data.timeLeft)
         btn.Text = "  ▶  " .. petName .. "   (👥 Players: " .. data.players .. "  |  ⏱️ " .. timeString .. ")"
         btn.Font = Enum.Font.GothamBold 
         btn.TextSize = 10.5 
@@ -291,7 +289,6 @@ local function refreshPetListUI()
 
         petButtons[petID] = btn
 
-        -- Kapag pinindot ang pet button, i-update ang selectedPetID at UI
         btn.MouseButton1Down:Connect(function()
             if isJoining then return end 
             selectedPetID = petID
@@ -316,7 +313,6 @@ task.spawn(function()
             if data then
                 data.timeLeft = data.timeLeft - 1
                 if data.timeLeft <= 0 then
-                    -- Agad na palitan ang pet at i-refresh ang UI
                     if selectedPetID == petID then
                         selectedPetID = nil
                         selectedPetName = nil
@@ -328,12 +324,11 @@ task.spawn(function()
                     local newID = HttpService:GenerateGUID(false)
                     table.insert(currentPetList, {id=newID, name=newName})
                     petServerData[newID] = generateFakeData()
-                    -- Agad na i-refresh ang UI para makita ang bagong pets
                     refreshPetListUI()
                 else
                     local currentBtn = petButtons[petID]
                     if currentBtn then
-                        local timeString = string.format("%02d Seconds Left", data.timeLeft)
+                        local timeString = string.format("%d Seconds Left", data.timeLeft)
                         currentBtn.Text = "  ▶  " .. petData.name .. "   (👥 Players: " .. data.players .. "  |  ⏱️ " .. timeString .. ")"
                         if selectedPetID ~= petID then
                             if data.timeLeft <= 3 then
@@ -379,7 +374,7 @@ creditsLabel.TextSize = 9
 creditsLabel.TextXAlignment = Enum.TextXAlignment.Left
 creditsLabel.Parent = footer
 
--- DRAG LOGIC (same as before)
+-- DRAG LOGIC
 local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
 header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -456,7 +451,7 @@ button.MouseButton1Click:Connect(function()
         task.spawn(function()
             serverHop()
         end)
-        -- Update list after teleport
+        
         local indexToRemove = nil
         for i, petData in ipairs(currentPetList) do
             if petData.id == petID then
@@ -487,4 +482,4 @@ button.MouseButton1Click:Connect(function()
     end
 end)
 
-print("🚀 Failsafe Server Hop Loaded: Teleport at Rejoin mechanics are fully armed!")
+print("🚀 Pet Finder UI Loaded with randomized 40s-120s cooldowns!")
